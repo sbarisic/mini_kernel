@@ -1,11 +1,5 @@
 #pragma once
 
-#include <intrin.h>
-#include <intrin0.h>
-
-#include <string.h>
-#include <stdint.h>
-
 typedef struct {
 	uint8_t Data;
 } MULTIBOOT_HEADER;
