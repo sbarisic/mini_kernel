@@ -13,7 +13,7 @@ global _multiboot_header
 extern _kmain
 extern _multiboot_info
 
-section .multiboot
+section .mboot
 align 4
 _multiboot_header:
 	dd MAGIC
@@ -32,7 +32,7 @@ _multiboot_header:
 	dd 0
 	dd 0
 
-section .text_nasm
+section .tnasm
 entry:
 	; Setup stack
 	mov esp, stack.top
