@@ -1,0 +1,5 @@
+#!ipxe
+
+prompt --key 0x02 --timeout 2000 Press Ctrl-B for the iPXE command line... && shell ||
+dhcp
+sanboot http://192.168.137.1/Kernel.iso
