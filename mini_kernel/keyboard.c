@@ -55,9 +55,9 @@ char kbdmap_default[] = {
 	'b', 'B', 'b', '{',
 	'n', 'N', 'n', '}',
 	'm', 'M', 'm', '§',
-	',', ';', ',', ',',	/*      ,<      */
-	'.', ':', '.', '.',	/*      .>      */
-	'/', '/', '/', '/',	/*      /?      */
+	',', ';', ',', ',',
+	'.', ':', '.', '.',
+	'-', '_', '-', '-',
 	'{', 0xFF, 0xFF, 0xFF,	/*      Rshift  (0x36)  */
 	'*', '*', '*', '*', // Numpad *
 	'!', 0xFF, 0xFF, 0xFF,	/*      (0x38)  */
@@ -93,15 +93,15 @@ char kbdmap_default[] = {
 	'<', '>', '<', '<',
 	'F', 0xFF, 0xFF, 0xFF, // F11
 	'F', 0xFF, 0xFF, 0xFF, // F12
-	'-', 0xFF, 0xFF, 0xFF,	/*      (0x59)  */
-	'_', 0xFF, 0xFF, 0xFF,	/*      (0x5a)  */
+	'-', 0xFF, 0xFF, 0xFF,
+	'_', 0xFF, 0xFF, 0xFF,
 	'W', 0xFF, 0xFF, 0xFF, // System (windows) key
-	'(', 0xFF, 0xFF, 0xFF,	/*      (0x5c)  */
+	'(', 0xFF, 0xFF, 0xFF,
 	'C', 0xFF, 0xFF, 0xFF, // Context menu key
-	'=', 0xFF, 0xFF, 0xFF,	/*      (0x5e)  */
-	'*', 0xFF, 0xFF, 0xFF,	/*      (0x5f)  */
-	'[', 0xFF, 0xFF, 0xFF,	/*      (0x60)  */
-	']', 0xFF, 0xFF, 0xFF	/*      (0x61)  */
+	'=', 0xFF, 0xFF, 0xFF,
+	'*', 0xFF, 0xFF, 0xFF, // print screen
+	'[', 0xFF, 0xFF, 0xFF,
+	']', 0xFF, 0xFF, 0xFF
 };
 
 char* kbdmap = kbdmap_default;
@@ -138,14 +138,19 @@ void keyboard_handle_interrupt() {
 				break;
 
 			default:
-				if (ctrl && alt)
-					keyboard_putchar(kbdmap[i * 4 + 3]);
-				else if (alt)
-					keyboard_putchar(kbdmap[i * 4 + 2]);
-				else if (lshift || rshift)
-					keyboard_putchar(kbdmap[i * 4 + 1]);
-				else
-					keyboard_putchar(kbdmap[i * 4]);
+				if (ctrl && alt) {
+					event_scancode((uint32_t)i * 4 + 3);
+					conin_putchar(kbdmap[i * 4 + 3]);
+				} else if (alt) {
+					event_scancode((uint32_t)i * 4 + 2);
+					conin_putchar(kbdmap[i * 4 + 2]);
+				} else if (lshift || rshift) {
+					event_scancode((uint32_t)i * 4 + 1);
+					conin_putchar(kbdmap[i * 4 + 1]);
+				} else {
+					event_scancode((uint32_t)i * 4);
+					conin_putchar(kbdmap[i * 4]);
+				}
 
 				break;
 		}

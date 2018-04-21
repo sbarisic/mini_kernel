@@ -42,10 +42,11 @@ void interrupts_reset(uint8_t IRQ) {
 __int(13);
 __int(14);
 __int(33);
-__int(42);
 __int(100);
 #undef __int
 #define __int(n) int ## n
+
+extern void int_syscall();
 
 void interrupts_init() {
 	for (int i = 0; i < IDT_SIZE; i++)
@@ -55,8 +56,9 @@ void interrupts_init() {
 	HOOK_INT(13); // GP
 	HOOK_INT(14); // PF
 	HOOK_INT(33); // Keyboard
-	HOOK_INT(42); // Software
 #undef HOOK_INT
+
+	init_idt_desc(0x08, int_syscall, INTGATE, &idt[42]);
 
 
 	_idtr.Limit = IDT_SIZE * 8;

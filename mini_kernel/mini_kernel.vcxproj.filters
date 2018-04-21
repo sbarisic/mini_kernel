@@ -24,13 +24,19 @@
     <ClCompile Include="GDT.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Console_IO.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="memory.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="keyboard.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="conio.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="syscall.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="serial.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

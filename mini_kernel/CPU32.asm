@@ -13,6 +13,7 @@ global _multiboot_header
 extern _kmain
 extern _multiboot_info
 extern _int_common
+extern _syscall_handler
 
 section .mboot
 align 4
@@ -28,10 +29,15 @@ _multiboot_header:
 	dd entry
 
 	; Mode type, width, height, depth
-	dd 1
+	; dd 1
+	; dd 0
+	; dd 0
+	; dd 0
+
 	dd 0
-	dd 0
-	dd 0
+	dd 800
+	dd 600
+	dd 32
 
 section .tnasm
 entry:
@@ -76,9 +82,12 @@ entry:
 
 		SAVE_REGS
 		push %1
+
 		call _int_common
+
 		pop eax
 		RESTORE_REGS
+
 		iret
 %endmacro
 
@@ -89,10 +98,13 @@ entry:
 
 		SAVE_REGS
 		push %1
+
 		call _int_common
+
 		pop eax
 		RESTORE_REGS
 		add esp, 4
+		; ^ Remove the error code from the stack, or somethin'
 		iret
 %endmacro
 
@@ -121,7 +133,25 @@ INTN	19	; #XM - SIMD Exception
 
 ; IRQs
 INTN 33
-INTN 42
+
+global _int_syscall
+_int_syscall:
+	cli
+
+	SAVE_REGS
+	push ebx
+	push eax
+
+	call _syscall_handler
+
+	mov al, 0x20
+	out 0x20, al
+	out 0xA0, al
+
+	pop eax
+	pop eax
+	RESTORE_REGS
+	iret
 
 global _reload_segments
 _reload_segments:

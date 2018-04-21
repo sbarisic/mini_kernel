@@ -3,16 +3,56 @@
 #include "Interrupts.h"
 #include "GDT.h"
 
+#define INIT_MSG(func, msg) do { write("[    ] " msg); func(); write("\r[OKAY\n"); } while (0)
+
 extern MULTIBOOT_HEADER multiboot_header;
-MULTIBOOT_INFO* multiboot_info;
+MULTIBOOT_INFO* multiboot_info = 0;
+char buffer[1024];
+
+void write_info(const char* str, int32_t n) {
+	com1_write_string(str);
+	write(str);
+
+	char itoa_buf[64];
+	_itoa(n, itoa_buf);
+	com1_write_string(itoa_buf);
+	write(itoa_buf);
+
+	com1_write_string("\n");
+	write("\n");
+}
+
+char* readline() {
+	write("mini_kernel# ");
+
+	char* in = gets(buffer);
+	write("\n");
+	return in;
+}
 
 _declspec(noreturn) void kmain() {
-	setup_gdt();
-	write("GDT ... OK\n");
+	clear_screen();
 
-	interrupts_init();
-	write("Interrupts ... OK\n");
+	INIT_MSG(setup_gdt, "Global Descriptor Table");
+	INIT_MSG(interrupts_init, "Interrupts");
+	INIT_MSG(init_com1, "COM1");
+	write("\n");
 
+	uint8_t* fb = multiboot_info->framebuffer_addr;
+	int len = multiboot_info->framebuffer_width * multiboot_info->framebuffer_height * (multiboot_info->framebuffer_bpp / 8);
+	_memset(fb, 0xFF, len);
+
+
+	while (1) {
+		char* input = readline();
+
+		if (!_strcmp(input, "com1_hello")) {
+			com1_write_string("Hello COM1! How are you doing?\n");
+		} else {
+			write(input);
+			write(": command not found\n");
+		}
+	}
 
 
 	while (1)

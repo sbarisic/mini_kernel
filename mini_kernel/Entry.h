@@ -18,10 +18,11 @@ typedef struct {
 	uint32_t MemUpper;
 
 	uint32_t BootDevice;
+
 	uint32_t CmdLine;
 
 	uint32_t ModsCount;
-	MULTIBOOT_MOD* ModsAddr;
+	uint32_t ModsAddr;
 
 	uint64_t syms1;
 	uint64_t syms2;
@@ -33,6 +34,8 @@ typedef struct {
 	uint32_t drives_addr;
 
 	uint32_t config_table;
+
+	uint32_t boot_loader_name;
 
 	uint32_t apm_table;
 
