@@ -6,6 +6,16 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "random.h"
+#include "stb_sprintf.h"
+
+#define STBI_ASSERT
+#define STBI_NO_STDIO
+#define STBI_NO_LINEAR
+#define STBI_NO_HDR
+#define STBI_ONLY_PNG
+#include "stb_image.h"
+
 typedef void(*syscall_func)(void* data);
 
 // System calls
@@ -32,3 +42,7 @@ void _memset(uint8_t* dest, uint8_t val, int len);
 int _memshift(uint8_t* buffer, uint32_t buffer_len, uint32_t count);
 int _strcmp(const char* a, const char* b);
 void _itoa(int n, char s[]);
+
+void kernel_allocator_init();
+void* kernel_alloc(uint32_t size);
+void kernel_free(void* frame);
