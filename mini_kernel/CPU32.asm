@@ -35,8 +35,8 @@ _multiboot_header:
 	; dd 0
 
 	dd 0
-	dd 800
-	dd 600
+	dd 1280
+	dd 720
 	dd 32
 
 section .tnasm
