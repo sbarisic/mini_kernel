@@ -292,19 +292,30 @@
   <ItemGroup>
     <ClCompile Include="conio.c" />
     <ClCompile Include="Entry.c" />
+    <ClCompile Include="kernel_allocator.c" />
     <ClCompile Include="GDT.c" />
+    <ClCompile Include="graphics.c" />
     <ClCompile Include="Interrupts.c" />
     <ClCompile Include="keyboard.c" />
     <ClCompile Include="memory.c" />
+    <ClCompile Include="random.c" />
+    <ClCompile Include="stb.cpp" />
+    <ClCompile Include="runtime.c" />
     <ClCompile Include="serial.c" />
     <ClCompile Include="syscall.c" />
+    <ClCompile Include="win32_crt_float.cpp" />
+    <ClCompile Include="win32_crt_math.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Entry.h" />
     <ClInclude Include="GDT.h" />
+    <ClInclude Include="graphics.h" />
     <ClInclude Include="Interrupts.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="mini_kernel.h" />
+    <ClInclude Include="random.h" />
+    <ClInclude Include="stb_image.h" />
+    <ClInclude Include="stb_sprintf.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="order.txt" />

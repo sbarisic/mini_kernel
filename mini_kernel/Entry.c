@@ -2,8 +2,9 @@
 #include "Entry.h"
 #include "Interrupts.h"
 #include "GDT.h"
+#include "graphics.h"
 
-#define INIT_MSG(func, msg) do { write("[    ] " msg); func(); write("\r[OKAY\n"); } while (0)
+#define INIT_MSG(func, msg) do { write(msg " ... "); func(); write("OK\n"); } while (0)
 
 extern MULTIBOOT_HEADER multiboot_header;
 MULTIBOOT_INFO* multiboot_info = 0;
@@ -33,15 +34,16 @@ char* readline() {
 _declspec(noreturn) void kmain() {
 	clear_screen();
 
+	init_genrand(0);
+	INIT_MSG(init_com1, "COM1");
 	INIT_MSG(setup_gdt, "Global Descriptor Table");
 	INIT_MSG(interrupts_init, "Interrupts");
-	INIT_MSG(init_com1, "COM1");
+	INIT_MSG(kernel_allocator_init, "Frame allocator");
 	write("\n");
 
-	uint8_t* fb = multiboot_info->framebuffer_addr;
-	int len = multiboot_info->framebuffer_width * multiboot_info->framebuffer_height * (multiboot_info->framebuffer_bpp / 8);
-	_memset(fb, 0xFF, len);
 
+	graphics_init(multiboot_info->framebuffer_addr, multiboot_info->framebuffer_pitch,
+				  multiboot_info->framebuffer_width, multiboot_info->framebuffer_height, multiboot_info->framebuffer_bpp);
 
 	while (1) {
 		char* input = readline();
