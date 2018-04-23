@@ -32,6 +32,9 @@ char* readline() {
 }
 
 _declspec(noreturn) void kmain() {
+	graphics_text_width = 80;
+	graphics_text_height = 25;
+	graphics_initialized = 0;
 	clear_screen();
 
 	init_genrand(0);
@@ -41,12 +44,24 @@ _declspec(noreturn) void kmain() {
 	INIT_MSG(kernel_allocator_init, "Frame allocator");
 	write("\n");
 
-
 	graphics_init(multiboot_info->framebuffer_addr, multiboot_info->framebuffer_pitch,
 				  multiboot_info->framebuffer_width, multiboot_info->framebuffer_height, multiboot_info->framebuffer_bpp);
 
+	MULTIBOOT_MOD* mods = multiboot_info->ModsAddr;
+	for (int i = 0; i < multiboot_info->ModsCount; i++) {
+		if (!_strcmp(mods[i].String, "bins/font.bin"))
+			graphics_load_font(mods[i].ModStart);
+
+		if (!_strcmp(mods[i].String, "bins/background.bin"))
+			graphics_load_background(mods[i].ModStart);
+	}
+
+	clear_screen();
+
 	while (1) {
 		char* input = readline();
+		if (!*input)
+			continue;
 
 		if (!_strcmp(input, "com1_hello")) {
 			com1_write_string("Hello COM1! How are you doing?\n");

@@ -1,7 +1,12 @@
 #include "mini_kernel.h"
+#include "graphics.h"
 
-#define CONOUT_WIDTH 80
-#define CONOUT_HEIGHT 25
+//#define CONOUT_WIDTH 80
+//#define CONOUT_HEIGHT 25
+//#define CONOUT_HEIGHT 45
+
+#define CONOUT_WIDTH graphics_text_width
+#define CONOUT_HEIGHT graphics_text_height
 
 #define CONIN_LEN 4096
 
@@ -18,7 +23,11 @@ struct {
 
 void clear_screen() {
 	ConOut.X = ConOut.Y = 0;
-	_memset(ConOut.Memory, 0, CONOUT_WIDTH * CONOUT_HEIGHT * 2);
+
+	if (graphics_initialized)
+		graphics_clear(clr_transparent);
+	else
+		_memset(ConOut.Memory, 0, CONOUT_WIDTH * CONOUT_HEIGHT * 2);
 }
 
 void write(const char* Msg) {
@@ -40,7 +49,10 @@ void write(const char* Msg) {
 				return;
 			}
 		} else {
-			ConOut.Memory[ConOut.Y * CONOUT_WIDTH + ConOut.X] = (uint16_t)(*Msg) | 15 << 8;
+			if (graphics_initialized)
+				graphics_blitchar(ConOut.X, ConOut.Y, *Msg);
+			else
+				ConOut.Memory[ConOut.Y * CONOUT_WIDTH + ConOut.X] = (uint16_t)(*Msg) | 15 << 8;
 			ConOut.X++;
 		}
 
@@ -52,7 +64,12 @@ void write(const char* Msg) {
 
 		if (ConOut.Y >= CONOUT_HEIGHT) {
 			ConOut.Y--;
-			_memshift(ConOut.Memory, CONOUT_WIDTH * CONOUT_HEIGHT * 2, CONOUT_WIDTH * 2);
+
+			if (!graphics_initialized)
+				_memshift(ConOut.Memory, CONOUT_WIDTH * CONOUT_HEIGHT * 2, CONOUT_WIDTH * 2);
+			else {
+				// TODO: Shift graphics memory
+			}
 		}
 	}
 }

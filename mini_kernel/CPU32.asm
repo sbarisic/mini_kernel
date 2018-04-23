@@ -169,5 +169,5 @@ section .bss
 align 4
 stack:
 	.bottom:
-		resb 16384
+		resb 32768
 	.top:
