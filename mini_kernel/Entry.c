@@ -65,6 +65,8 @@ _declspec(noreturn) void kmain() {
 
 		if (!_strcmp(input, "com1_hello")) {
 			com1_write_string("Hello COM1! How are you doing?\n");
+		} else if (!_strcmp(input, "clear")) {
+			clear_screen();
 		} else {
 			write(input);
 			write(": command not found\n");
