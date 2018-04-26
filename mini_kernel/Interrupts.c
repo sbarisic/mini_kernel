@@ -39,6 +39,7 @@ void interrupts_reset(uint8_t IRQ) {
 }
 
 #define __int(n) extern void int ## n ()
+__int(6);
 __int(13);
 __int(14);
 __int(33);
@@ -53,6 +54,7 @@ void interrupts_init() {
 		init_idt_desc(0x08, __int(100), INTGATE, &idt[i]);
 
 #define HOOK_INT(n) init_idt_desc(0x08, __int(n), INTGATE, &idt[n])
+	HOOK_INT(6); // Invalid opcode
 	HOOK_INT(13); // GP
 	HOOK_INT(14); // PF
 	HOOK_INT(33); // Keyboard
@@ -89,6 +91,12 @@ void interrupts_init() {
 
 void int_common(int ID) {
 	switch (ID) {
+		case 6:
+			write("INVALID OPCODE\n");
+			while (1)
+				;
+			break;
+
 		case 13:
 			write("GENERAL PROTECTION FAULT\n");
 			while (1)

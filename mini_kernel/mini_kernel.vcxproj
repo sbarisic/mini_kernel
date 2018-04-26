@@ -291,6 +291,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="conio.c" />
+    <ClCompile Include="console_commands.c" />
     <ClCompile Include="Entry.c" />
     <ClCompile Include="kernel_allocator.c" />
     <ClCompile Include="GDT.c" />
@@ -303,6 +304,7 @@
     <ClCompile Include="runtime.c" />
     <ClCompile Include="serial.c" />
     <ClCompile Include="syscall.c" />
+    <ClCompile Include="turtle.c" />
     <ClCompile Include="win32_crt_float.cpp" />
     <ClCompile Include="win32_crt_math.cpp" />
   </ItemGroup>

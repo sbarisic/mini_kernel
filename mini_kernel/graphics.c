@@ -14,6 +14,35 @@ static color* bg_data = NULL;
 static uint8_t* fb;
 static int fb_width, fb_height, fb_pitch, bytesperpixel;
 
+static color multiply_color = {
+	255, 255, 255, 255
+};
+
+static color text_color = {
+	255, 255, 255, 255
+};
+
+void graphics_get_res(int* w, int* h) {
+	*w = fb_width;
+	*h = fb_height;
+}
+
+void graphics_set_blend_color(color clr) {
+	multiply_color = clr;
+}
+
+color graphics_get_blend_color() {
+	return multiply_color;
+}
+
+void graphics_set_text_color(color clr) {
+	text_color = clr;
+}
+
+color graphics_get_text_color() {
+	return text_color;
+}
+
 void graphics_putpixel(int x, int y, color_fb clr) {
 	if (x < 0 || x > fb_width)
 		return;
@@ -41,9 +70,55 @@ void graphics_putpixel2(int32_t x, int32_t y, color* clr) {
 		fb_clr.R = clr->R;
 		fb_clr.G = clr->G;
 		fb_clr.B = clr->B;
+
+		fb_clr.R = (uint8_t)((fb_clr.R * (int32_t)multiply_color.R) / 255);
+		fb_clr.G = (uint8_t)((fb_clr.G * (int32_t)multiply_color.G) / 255);
+		fb_clr.B = (uint8_t)((fb_clr.B * (int32_t)multiply_color.B) / 255);
 	}
 
 	graphics_putpixel(x, y, fb_clr);
+}
+
+void graphics_putline(int x0, int y0, int x1, int y1, color* clr) {
+	int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+	int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+	int err = dx + dy, e2;
+
+	for (;;) {
+		graphics_putpixel2(x0, y0, clr);
+
+		if (x0 == x1 && y0 == y1)
+			break;
+
+		e2 = 2 * err;
+		if (e2 >= dy) {
+			err += dy;
+			x0 += sx;
+		}
+
+		if (e2 <= dx) {
+			err += dx;
+			y0 += sy;
+		}
+	}
+}
+
+void graphics_putcircle(int xm, int ym, int r, color* clr) {
+	int x = -r, y = 0, err = 2 - 2 * r;
+
+	do {
+		graphics_putpixel2(xm - x, ym + y, clr); // 1st quadrant
+		graphics_putpixel2(xm - y, ym - x, clr); // 2nd quadrant
+		graphics_putpixel2(xm + x, ym - y, clr); // 3rd quadrant
+		graphics_putpixel2(xm + y, ym + x, clr); // 4th quadrant
+		r = err;
+
+		if (r > x)
+			err += ++x * 2 + 1;
+
+		if (r <= y)
+			err += ++y * 2 + 1;
+	} while (x < 0);
 }
 
 void graphics_clear(color clr) {
@@ -86,7 +161,10 @@ void graphics_blitchar(int32_t char_x, int32_t char_y, int32_t c) {
 	int32_t font_pos_x = (c % (font_w / font_char_w)) * font_char_w;
 	int32_t font_pos_y = (c / (font_h / font_char_h)) * font_char_h;
 
+	color old_blend = graphics_get_blend_color();
+	graphics_set_blend_color(graphics_get_text_color());
 	graphics_blit_image2(char_x, char_y, font_pos_x, font_pos_y, font_char_w, font_char_h, font_w, font_h, font_data);
+	graphics_set_blend_color(old_blend);
 }
 
 void graphics_init(uint8_t* fbaddr, uint32_t pitch, uint32_t width, uint32_t height, uint32_t bpp) {
@@ -102,7 +180,8 @@ void graphics_init(uint8_t* fbaddr, uint32_t pitch, uint32_t width, uint32_t hei
 	SET_COLOR(clr_blue, 0, 0, 255, 255);
 	SET_COLOR(clr_white, 255, 255, 255, 255);
 
-	font_char_w = font_char_h = 16;
+	font_char_w = 16;
+	font_char_h = 16;
 	graphics_text_width = width / font_char_w;
 	graphics_text_height = height / font_char_h;
 	graphics_initialized = 1;

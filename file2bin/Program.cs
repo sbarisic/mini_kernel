@@ -9,6 +9,7 @@ using System.Reflection;
 
 namespace fileproc {
 	class Program {
+		static string DataName = "data";
 		static string BinsName = "bins";
 		static string BinsDir;
 		static string DataDir;
@@ -19,8 +20,11 @@ namespace fileproc {
 		static void Main(string[] args) {
 			string ExeLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 			BinsDir = Path.Combine(ExeLocation, BinsName);
-			DataDir = Path.Combine(ExeLocation, "data");
+			DataDir = Path.Combine(ExeLocation, DataName);
 			GrubCfg = Path.Combine(ExeLocation, "boot", "grub", "grub.cfg");
+
+			if (!Directory.Exists(DataDir))
+				return;
 
 			if (!Directory.Exists(BinsDir))
 				Directory.CreateDirectory(BinsDir);

@@ -10,6 +10,15 @@ extern MULTIBOOT_HEADER multiboot_header;
 MULTIBOOT_INFO* multiboot_info = 0;
 char buffer[1024];
 
+int console_command_count = 0;
+console_command console_commands[1024] = { 0 };
+
+void register_console_command(const char* name, console_func f) {
+	console_commands[console_command_count].name = name;
+	console_commands[console_command_count].f = f;
+	console_command_count++;
+}
+
 void write_info(const char* str, int32_t n) {
 	com1_write_string(str);
 	write(str);
@@ -24,7 +33,7 @@ void write_info(const char* str, int32_t n) {
 }
 
 char* readline() {
-	write("mini_kernel# ");
+	write(">");
 
 	char* in = gets(buffer);
 	write("\n");
@@ -35,6 +44,7 @@ _declspec(noreturn) void kmain() {
 	graphics_text_width = 80;
 	graphics_text_height = 25;
 	graphics_initialized = 0;
+	console_enable(1);
 	clear_screen();
 
 	init_genrand(0);
@@ -47,6 +57,9 @@ _declspec(noreturn) void kmain() {
 	graphics_init(multiboot_info->framebuffer_addr, multiboot_info->framebuffer_pitch,
 				  multiboot_info->framebuffer_width, multiboot_info->framebuffer_height, multiboot_info->framebuffer_bpp);
 
+	register_default_console_commands();
+	register_turtle_console_commands();
+
 	MULTIBOOT_MOD* mods = multiboot_info->ModsAddr;
 	for (int i = 0; i < multiboot_info->ModsCount; i++) {
 		if (!_strcmp(mods[i].String, "bins/font.bin"))
@@ -57,23 +70,49 @@ _declspec(noreturn) void kmain() {
 	}
 
 	clear_screen();
+	int w, h;
+	graphics_get_res(&w, &h);
+
+	stbsp_sprintf(buffer, "Resolution is %d x %d\n", w, h);
+	write(buffer);
 
 	while (1) {
 		char* input = readline();
 		if (!*input)
 			continue;
 
-		if (!_strcmp(input, "com1_hello")) {
-			com1_write_string("Hello COM1! How are you doing?\n");
-		} else if (!_strcmp(input, "clear")) {
-			clear_screen();
-		} else {
-			write(input);
-			write(": command not found\n");
+		char buffer2[1024];
+		char* args[32] = { 0 };
+		strcpy(buffer2, input);
+
+		const char* delims = " \t";
+		char* pch = strtok(buffer2, delims);
+		int i = 0, len = 0, found_cmd = 0;
+
+		while (pch != NULL) {
+			/*memset(buffer, 0, sizeof(buffer));
+			stbsp_sprintf(buffer, "%d - %s\n", i, pch);
+			write(buffer);*/
+			args[i] = pch;
+
+			pch = strtok(NULL, delims);
+			i++;
+		}
+
+		for (len = i, i = 0; i < sizeof(console_commands) / sizeof(*console_commands); i++) {
+			if (console_commands[i].f == NULL)
+				break;
+
+			if (!_strcmp(args[0], console_commands[i].name)) {
+				found_cmd = 1;
+				console_commands[i].f(len, args, input);
+				break;
+			}
+		}
+
+		if (!found_cmd) {
+			stbsp_sprintf(buffer, "%s: command not found\n", args[0]);
+			write(buffer);
 		}
 	}
-
-
-	while (1)
-		;
 }

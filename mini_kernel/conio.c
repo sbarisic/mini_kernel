@@ -7,8 +7,9 @@
 
 #define CONOUT_WIDTH graphics_text_width
 #define CONOUT_HEIGHT graphics_text_height
-
 #define CONIN_LEN 4096
+
+static int console_enabled = 1;
 
 struct {
 	int ReadingInput;
@@ -21,7 +22,14 @@ struct {
 	uint16_t* Memory;
 } ConOut = { 0, 0, 0xb8000 };
 
+void console_enable(int enable) {
+	console_enabled = enable;
+}
+
 void clear_screen() {
+	if (!console_enabled)
+		return;
+
 	ConOut.X = ConOut.Y = 0;
 
 	if (graphics_initialized)
@@ -31,6 +39,8 @@ void clear_screen() {
 }
 
 void write(const char* Msg) {
+	if (!console_enabled)
+		return;
 	com1_write_string(Msg);
 
 	while (*Msg) {
@@ -63,7 +73,7 @@ void write(const char* Msg) {
 		}
 
 		if (ConOut.Y >= CONOUT_HEIGHT) {
-			ConOut.Y--;
+			ConOut.Y = 0; // YOLO
 
 			if (!graphics_initialized)
 				_memshift(ConOut.Memory, CONOUT_WIDTH * CONOUT_HEIGHT * 2, CONOUT_WIDTH * 2);
@@ -75,6 +85,9 @@ void write(const char* Msg) {
 }
 
 char* gets(char* str) {
+	if (!console_enabled)
+		return NULL;
+
 	ConIn.ReadingInput = 1;
 	ConIn.Idx = 0;
 
@@ -110,6 +123,9 @@ void input_clear() {
 }
 
 void conin_putchar(uint8_t c) {
+	if (!console_enabled)
+		return;
+
 	if (!ConIn.ReadingInput)
 		return;
 

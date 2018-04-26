@@ -1,28 +1,5 @@
 #include "mini_kernel.h"
 
-#pragma function(memset)
-void* memset(void *dest, int c, size_t count) {
-	char *bytes = (char *)dest;
-
-	while (count--) {
-		*bytes++ = (char)c;
-	}
-
-	return dest;
-}
-
-#pragma function(memcpy)
-void* memcpy(void *dest, const void *src, size_t count) {
-	char *dest8 = (char *)dest;
-	const char *src8 = (const char *)src;
-
-	while (count--) {
-		*dest8++ = *src8++;
-	}
-
-	return dest;
-}
-
 void _memcpy(uint8_t* dest, uint8_t* source, int len) {
 	memcpy(dest, source, len);
 }
@@ -53,17 +30,6 @@ int _strcmp(const char* a, const char* b) {
 	return *(const unsigned char*)a - *(const unsigned char*)b;
 }
 
-void reverse(char s[]) {
-	int i, j;
-	char c;
-
-	for (i = 0, j = strlen(s) - 1; i < j; i++, j--) {
-		c = s[i];
-		s[i] = s[j];
-		s[j] = c;
-	}
-}
-
 void _itoa(int n, char s[]) {
 	int i, sign;
 
@@ -81,33 +47,4 @@ void _itoa(int n, char s[]) {
 
 	s[i] = '\0';
 	reverse(s);
-}
-
-
-void* malloc(uint32_t size) {
-	return kernel_alloc(size);
-}
-
-void free(void* mem) {
-	kernel_free(mem);
-}
-
-void* realloc(void* ptr, uint32_t size) {
-	void* newmem = NULL;
-
-	if (size != NULL) {
-		newmem = malloc(size);
-
-		if (newmem == NULL)
-			return NULL;
-	}
-
-	if (ptr != NULL) {
-		if (size != NULL)
-			memcpy(newmem, ptr, 0);
-
-		free(ptr);
-	}
-
-	return newmem;
 }
