@@ -52,3 +52,5 @@ typedef struct {
 	uint32_t framebuffer_height;
 	uint8_t framebuffer_bpp;
 } MULTIBOOT_INFO;
+
+extern MULTIBOOT_INFO* multiboot_info;

@@ -6,8 +6,18 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Drawing;
 using System.Reflection;
+using System.Drawing.Text;
 
 namespace fileproc {
+	static class Utils {
+		static Random Rndm = new Random();
+
+		public static T Rnd<T>(this IEnumerable<T> Collection) {
+			T[] Arr = Collection.ToArray();
+			return Arr[Rndm.Next(Arr.Length)];
+		}
+	}
+
 	class Program {
 		static string DataName = "data";
 		static string BinsName = "bins";
@@ -16,6 +26,7 @@ namespace fileproc {
 		static string GrubCfg;
 
 		static List<string> ProcessedFiles = new List<string>();
+
 
 		static void Main(string[] args) {
 			string ExeLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -47,15 +58,17 @@ namespace fileproc {
 
 			if (new string[] { ".bmp", ".gif", ".jpeg", ".jpg", ".png", ".tiff" }.Contains(Ext))
 				ConvertImage(Pth, Out);
+			else if (new string[] { ".ttf" }.Contains(Ext))
+				ConvertFont(Pth, Out);
 			else
 				throw new Exception("Unsupported file extension " + Ext);
 
 			ProcessedFiles.Add(Path.Combine(BinsName, Path.GetFileName(Out)));
 		}
 
-		static void ConvertImage(string InFile, string OutFile) {
+		static void ConvertImage(Image Img, string OutFile) {
 			using (BinaryWriter BW = new BinaryWriter(File.OpenWrite(OutFile))) {
-				using (Bitmap Bmp = (Bitmap)Bitmap.FromFile(InFile)) {
+				using (Bitmap Bmp = new Bitmap(Img)) {
 					BW.Write((int)Bmp.Width);
 					BW.Write((int)Bmp.Height);
 
@@ -69,6 +82,35 @@ namespace fileproc {
 							BW.Write(Clr.A);
 						}
 				}
+			}
+		}
+
+		static void ConvertImage(string InFile, string OutFile) {
+			ConvertImage(Image.FromFile(InFile), OutFile);
+		}
+
+		static void ConvertFont(string InFile, string OutFile) {
+			const int FSize = 16;
+
+			PrivateFontCollection PFC = new PrivateFontCollection();
+			PFC.AddFontFile(InFile);
+			Font Fnt = new Font(PFC.Families[0], FSize);
+
+			using (Bitmap Bmp = new Bitmap(FSize * 16, FSize * 16)) {
+				using (Graphics Gfx = Graphics.FromImage(Bmp)) {
+					Gfx.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+
+					for (int x = 0; x < 16; x++)
+						for (int y = 0; y < 16; y++) {
+							Gfx.FillRectangle((Brush)typeof(Brushes).GetProperties().Rnd().GetGetMethod().Invoke(null, null), x * FSize, y * FSize, FSize, FSize);
+							Gfx.DrawString(((char)(y * 16 + x)).ToString(), Fnt, Brushes.White, x * FSize, y * FSize);
+						}
+
+
+				}
+
+				Bmp.Save("TEST.png");
+				ConvertImage(Bmp, OutFile);
 			}
 		}
 	}

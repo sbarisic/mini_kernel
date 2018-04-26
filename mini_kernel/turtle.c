@@ -21,8 +21,12 @@ void t_setpos(int argc, const char** argv, const char* argi) {
 	}
 }
 
-void t_setclr(int argc, const char** argv, const char* argi) {
-	if (argc == 4) {
+void t_clr(int argc, const char** argv, const char* argi) {
+	if (argc == 2 && !_strcmp(argv[1], "random")) {
+		uint32_t clr0 = (uint32_t)genrand_int31();
+		turtle_color = *(color*)&clr0;
+		turtle_color.A = 255;
+	} else	if (argc == 4) {
 		turtle_color.R = (uint8_t)(_atoi(argv[1]) % 256);
 		turtle_color.G = (uint8_t)(_atoi(argv[2]) % 256);
 		turtle_color.B = (uint8_t)(_atoi(argv[3]) % 256);
@@ -66,7 +70,7 @@ void register_turtle_console_commands() {
 	graphics_get_res(&screen_w, &screen_h);
 
 	register_console_command("t.setpos", &t_setpos);
-	register_console_command("t.setclr", &t_setclr);
+	register_console_command("t.clr", &t_clr);
 	register_console_command("t.move", &t_move);
 	register_console_command("t.goto", &t_goto);
 	register_console_command("t.penup", &t_penup);

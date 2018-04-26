@@ -143,6 +143,17 @@ void graphics_load_font(uint32_t* font_file) {
 	font_w = font_file[0];
 	font_h = font_file[1];
 	font_data = font_file + 2;
+
+	const int char_count_x = 16;
+	const int char_count_y = 16;
+
+	//font_char_w = 16;
+	//font_char_h = 16;
+	font_char_w = font_w / char_count_x;
+	font_char_h = font_h / char_count_y;
+
+	graphics_text_width = fb_width / font_char_w;
+	graphics_text_height = fb_height / font_char_h;
 }
 
 void graphics_load_background(uint32_t* bg_file) {
@@ -155,8 +166,8 @@ void graphics_blitchar(int32_t char_x, int32_t char_y, int32_t c) {
 	if (c > 255)
 		return;
 
-	char_x *= 16;
-	char_y *= 16;
+	char_x *= font_char_w;
+	char_y *= font_char_h;
 
 	int32_t font_pos_x = (c % (font_w / font_char_w)) * font_char_w;
 	int32_t font_pos_y = (c / (font_h / font_char_h)) * font_char_h;
@@ -180,9 +191,5 @@ void graphics_init(uint8_t* fbaddr, uint32_t pitch, uint32_t width, uint32_t hei
 	SET_COLOR(clr_blue, 0, 0, 255, 255);
 	SET_COLOR(clr_white, 255, 255, 255, 255);
 
-	font_char_w = 16;
-	font_char_h = 16;
-	graphics_text_width = width / font_char_w;
-	graphics_text_height = height / font_char_h;
 	graphics_initialized = 1;
 }
