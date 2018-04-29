@@ -16,6 +16,11 @@
 #define STBI_ONLY_PNG
 #include "stb_image.h"
 
+#define TRUE 1
+#define FALSE 0
+
+#define MEGABYTE 0x100000
+
 typedef void(*syscall_func)(void* data);
 typedef void(*console_func)(int argc, const char** argv, const char* argi);
 
@@ -57,6 +62,6 @@ void reverse(char s[]);
 int isnumeric(char x);
 int _atoi(char *str);
 
-void kernel_allocator_init();
+void kernel_allocator_init(uint32_t free_memory, uint32_t free_memory_len);
 void* kernel_alloc(uint32_t size);
 void kernel_free(void* frame);

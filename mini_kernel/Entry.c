@@ -4,7 +4,7 @@
 #include "GDT.h"
 #include "graphics.h"
 
-#define INIT_MSG(func, msg) do { write(msg " ... "); func(); write("OK\n"); } while (0)
+#define INIT_MSG(func, msg) do { write(msg " ... "); func; write("OK\n"); } while (0)
 
 extern MULTIBOOT_HEADER multiboot_header;
 MULTIBOOT_INFO* multiboot_info = 0;
@@ -48,11 +48,13 @@ _declspec(noreturn) void kmain() {
 	clear_screen();
 
 	init_genrand(0);
-	INIT_MSG(init_com1, "COM1");
-	INIT_MSG(setup_gdt, "Global Descriptor Table");
-	INIT_MSG(interrupts_init, "Interrupts");
-	INIT_MSG(kernel_allocator_init, "Frame allocator");
+	INIT_MSG(init_com1(), "COM1");
+	INIT_MSG(setup_gdt(), "Global Descriptor Table");
+	INIT_MSG(interrupts_init(), "Interrupts");
+	INIT_MSG(kernel_allocator_init(0x1000000, 0x1000000), "Memory allocator");
 	write("\n");
+
+	// TODO: Parse memory map supplied by grub and allocate free memory buffer from the first large region of free memory
 
 	graphics_init(multiboot_info->framebuffer_addr, multiboot_info->framebuffer_pitch,
 				  multiboot_info->framebuffer_width, multiboot_info->framebuffer_height, multiboot_info->framebuffer_bpp);
