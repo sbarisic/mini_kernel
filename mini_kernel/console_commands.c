@@ -44,17 +44,24 @@ void cmd_clear(int argc, const char** argv, const char* argi) {
 }
 
 void cmd_com(int argc, const char** argv, const char* argi) {
+	char buffer[64];
+
 	if (argc >= 2) {
 		if (!strcmp(argv[1], "hello")) {
 			com1_write_string("Hello COM1 World!\n");
 		} else if (!strcmp(argv[1], "init")) {
 			int num = _atoi(argv[2]);
 
-			char buffer[64];
 			stbsp_sprintf(buffer, "Initializing serial on port 0x%X (%d)\n", num, num);
 			write(buffer);
 
 			init_com(num);
+		} else if (!strcmp(argv[1], "info")) {
+			uint16_t cur_port = 0;
+			com_get_info(&cur_port);
+
+			stbsp_sprintf(buffer, "Active COM port: 0x%2X (%d)\nHello World!\n", cur_port, (uint32_t)cur_port);
+			write(buffer);
 		} else {
 			write(argv[1]);
 			write(": com subcommand not found\n");
@@ -64,6 +71,7 @@ void cmd_com(int argc, const char** argv, const char* argi) {
 	}
 
 	write("com hello\n");
+	write("com info\n");
 	write("com init [num]\n");
 }
 

@@ -39,11 +39,13 @@ void syscall(int a, void* b);
 
 // Serial
 void init_com1();
-void init_com(uint16_t PORT_N);
 uint8_t com1_read();
 void com1_write(uint8_t byte);
 void com1_write_string(const char* data);
 void com1_write_32(uint32_t num);
+
+void init_com(uint16_t PORT_N);
+void com_get_info(uint16_t* cur_port);
 
 // Console input/output
 void console_enable(int enable);

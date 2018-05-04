@@ -222,13 +222,17 @@ static void pci_visit(uint32_t bus, uint32_t dev, uint32_t func, int print_only)
 		if (PCI_CHECK_CLASS_NAME(info, PCI_COMM_SERIAL)) {
 			//pci_write32(id,  PCI_CONFIG_COMMAND,)
 
-			for (uint32_t i = 0; i < 10; i++) {
+			PciBar bar0;
+			pci_getbar(&bar0, id, 0);
+			init_com(bar0.u.port);
+
+			/*for (uint32_t i = 0; i < 10; i++) {
 				PciBar bar;
 				pci_getbar(&bar, id, i * 2); // IO base
 
 				stbsp_sprintf(buffer, "BAR%d %x/%x %ld %d\n", i * 2, bar.u.address, bar.u.port, bar.size, bar.flags);
 				write(buffer);
-			}
+			}*/
 		}
 	}
 }

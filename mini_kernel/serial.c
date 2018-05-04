@@ -6,10 +6,6 @@
 static uint16_t PORT;
 int com_initialized = 0;
 
-void init_com1() {
-	init_com(COM1); // Init default COM port
-}
-
 void init_com(uint16_t PORT_N) {
 	PORT = PORT_N;
 
@@ -36,10 +32,6 @@ uint8_t com_read(uint16_t PORT) {
 	return __inbyte(PORT);
 }
 
-uint8_t com1_read() {
-	return com_read(PORT);
-}
-
 void com_write(uint16_t PORT, uint8_t byte) {
 	if (!com_initialized)
 		return;
@@ -50,20 +42,12 @@ void com_write(uint16_t PORT, uint8_t byte) {
 	__outbyte(PORT, byte);
 }
 
-void com1_write(uint8_t byte) {
-	com_write(PORT, byte);
-}
-
 void com_write_string(uint16_t PORT, const char* data) {
 	if (!com_initialized)
 		return;
 
 	while (*data)
 		com_write(PORT, *data++);
-}
-
-void com1_write_string(const char* data) {
-	com_write_string(PORT, data);
 }
 
 void com_write_32(uint16_t PORT, uint32_t num) {
@@ -74,6 +58,29 @@ void com_write_32(uint16_t PORT, uint32_t num) {
 	com_write(PORT, num >> 16);
 	com_write(PORT, num >> 8);
 	com_write(PORT, num);
+}
+
+void com_get_info(uint16_t* cur_port) {
+	if (cur_port)
+		*cur_port = PORT;
+}
+
+// COM1 stuff
+
+void init_com1() {
+	init_com(COM1); // Init default COM port
+}
+
+uint8_t com1_read() {
+	return com_read(PORT);
+}
+
+void com1_write(uint8_t byte) {
+	com_write(PORT, byte);
+}
+
+void com1_write_string(const char* data) {
+	com_write_string(PORT, data);
 }
 
 void com1_write_32(uint32_t num) {
