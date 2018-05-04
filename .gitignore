@@ -288,3 +288,5 @@ __pycache__/
 *.xsd.cs
 Kernel.iso
 _com1.txt
+
+_com2\.txt
