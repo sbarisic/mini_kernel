@@ -1,10 +1,18 @@
 #include "mini_kernel.h"
+#include "pci.h"
 
-#define PORT 0x3F8
+#define COM1 0x3F8
 
-int com1_initialized = 0;
+static uint16_t PORT;
+int com_initialized = 0;
 
 void init_com1() {
+	init_com(COM1); // Init default COM port
+}
+
+void init_com(uint16_t PORT_N) {
+	PORT = PORT_N;
+
 	__outbyte(PORT + 1, 0x00);    // Disable all interrupts
 	__outbyte(PORT + 3, 0x80);    // Enable DLAB (set baud rate divisor)
 
@@ -15,11 +23,11 @@ void init_com1() {
 	__outbyte(PORT + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
 	__outbyte(PORT + 4, 0x0B);    // IRQs enabled, RTS/DSR set
 
-	com1_initialized = 1;
+	com_initialized = 1;
 }
 
-uint8_t com1_read() {
-	if (!com1_initialized)
+uint8_t com_read(uint16_t PORT) {
+	if (!com_initialized)
 		return 0;
 
 	while (!(__inbyte(PORT + 5) & 1))
@@ -28,8 +36,12 @@ uint8_t com1_read() {
 	return __inbyte(PORT);
 }
 
-void com1_write(uint8_t byte) {
-	if (!com1_initialized)
+uint8_t com1_read() {
+	return com_read(PORT);
+}
+
+void com_write(uint16_t PORT, uint8_t byte) {
+	if (!com_initialized)
 		return;
 
 	while (!(__inbyte(PORT + 5) & 0x20))
@@ -38,20 +50,32 @@ void com1_write(uint8_t byte) {
 	__outbyte(PORT, byte);
 }
 
-void com1_write_string(const char* data) {
-	if (!com1_initialized)
+void com1_write(uint8_t byte) {
+	com_write(PORT, byte);
+}
+
+void com_write_string(uint16_t PORT, const char* data) {
+	if (!com_initialized)
 		return;
 
 	while (*data)
-		com1_write(*data++);
+		com_write(PORT, *data++);
+}
+
+void com1_write_string(const char* data) {
+	com_write_string(PORT, data);
+}
+
+void com_write_32(uint16_t PORT, uint32_t num) {
+	if (!com_initialized)
+		return;
+
+	com_write(PORT, num >> 24);
+	com_write(PORT, num >> 16);
+	com_write(PORT, num >> 8);
+	com_write(PORT, num);
 }
 
 void com1_write_32(uint32_t num) {
-	if (!com1_initialized)
-		return;
-
-	com1_write(num >> 24);
-	com1_write(num >> 16);
-	com1_write(num >> 8);
-	com1_write(num);
+	com_write_32(PORT, num);
 }

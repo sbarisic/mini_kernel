@@ -3,8 +3,9 @@
 #include "Interrupts.h"
 #include "GDT.h"
 #include "graphics.h"
+#include "pci.h"
 
-#define INIT_MSG(func, msg) do { write(msg " ... "); func; write("OK\n"); } while (0)
+#define INIT_MSG(func, msg) do { com1_write_string("* " msg " initializing\n"); func; com1_write_string("* " msg " OK\n"); } while (0)
 
 extern MULTIBOOT_HEADER multiboot_header;
 MULTIBOOT_INFO* multiboot_info = 0;
@@ -51,18 +52,27 @@ _declspec(noreturn) void kmain() {
 	INIT_MSG(init_com1(), "COM1");
 	INIT_MSG(setup_gdt(), "Global Descriptor Table");
 	INIT_MSG(interrupts_init(), "Interrupts");
-	INIT_MSG(kernel_allocator_init(0x1000000, 0x1000000), "Memory allocator");
-	write("\n");
 
-	// TODO: Parse memory map supplied by grub and allocate free memory buffer from the first large region of free memory
-
-	graphics_init(multiboot_info->framebuffer_addr, multiboot_info->framebuffer_pitch,
-				  multiboot_info->framebuffer_width, multiboot_info->framebuffer_height, multiboot_info->framebuffer_bpp);
-
-	register_default_console_commands();
-	register_turtle_console_commands();
-
+	// Calculate largest free address
+	// Everything (kernel code, modules) shall be below that address
 	MULTIBOOT_MOD* mods = multiboot_info->ModsAddr;
+	uint32_t largest_free_address = 0;
+	for (int i = 0; i < multiboot_info->ModsCount; i++) {
+		uint32_t mod_end = mods[i].ModEnd + 128;
+
+		if (mod_end > largest_free_address)
+			largest_free_address = mod_end;
+	}
+
+	// Initialize memory manager that starts at largest free address and ends at the end of ram
+	uint32_t mbytes_system = 0;
+	INIT_MSG(kernel_allocator_parse_grub(multiboot_info->mmap_addr, multiboot_info->mmap_len, &mbytes_system, largest_free_address), "Memory allocator");
+
+	// Init graphics
+	graphics_init(multiboot_info->framebuffer_addr, multiboot_info->framebuffer_pitch, multiboot_info->framebuffer_width, multiboot_info->framebuffer_height,
+				  multiboot_info->framebuffer_bpp);
+
+	mods = multiboot_info->ModsAddr;
 	for (int i = 0; i < multiboot_info->ModsCount; i++) {
 		if (!_strcmp(mods[i].String, "bins/font.bin"))
 			graphics_load_font(mods[i].ModStart);
@@ -75,7 +85,14 @@ _declspec(noreturn) void kmain() {
 	int w, h;
 	graphics_get_res(&w, &h);
 
+	INIT_MSG(pci_init(), "PCI");
+	INIT_MSG(register_default_console_commands(), "Default commands");
+	INIT_MSG(register_turtle_console_commands(), "Turtle commands");
+
 	stbsp_sprintf(buffer, "Resolution is %d x %d\n", w, h);
+	write(buffer);
+
+	stbsp_sprintf(buffer, "%d megabytes free\n", kernel_count_free_memory() / MEGABYTE);
 	write(buffer);
 
 	while (1) {

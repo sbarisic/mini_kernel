@@ -39,6 +39,7 @@ void syscall(int a, void* b);
 
 // Serial
 void init_com1();
+void init_com(uint16_t PORT_N);
 uint8_t com1_read();
 void com1_write(uint8_t byte);
 void com1_write_string(const char* data);
@@ -65,3 +66,8 @@ int _atoi(char *str);
 void kernel_allocator_init(uint32_t free_memory, uint32_t free_memory_len);
 void* kernel_alloc(uint32_t size);
 void kernel_free(void* frame);
+void* kernel_alloc_copy(void* memory, uint32_t len);
+void* kernel_alloc_in_place(void* mem, uint32_t size);
+//void* kernel_realloc_in_place(void* mem, uint32_t size);
+uint32_t kernel_count_free_memory();
+uint32_t kernel_allocator_parse_grub(uint32_t mmap_addr, uint32_t mmap_len, uint32_t* system_mbytes, uint32_t discard_below);

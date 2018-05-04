@@ -185,11 +185,18 @@ void graphics_init(uint8_t* fbaddr, uint32_t pitch, uint32_t width, uint32_t hei
 	fb_pitch = pitch;
 	bytesperpixel = bpp / 8;
 
+	/*int res = kernel_alloc_in_place(fbaddr, fb_pitch * fb_height * bytesperpixel);
+	char buffer[64];
+	stbsp_sprintf(buffer, "Framebuffer allocation in place ... %s\n", res == NULL ? "fail" : "OK");
+	com1_write_string(buffer);*/
+
 	SET_COLOR(clr_transparent, 0, 0, 0, 0);
 	SET_COLOR(clr_red, 255, 0, 0, 255);
 	SET_COLOR(clr_green, 0, 255, 0, 255);
 	SET_COLOR(clr_blue, 0, 0, 255, 255);
 	SET_COLOR(clr_white, 255, 255, 255, 255);
+
+	//graphics_clear(clr_red);
 
 	graphics_initialized = 1;
 }

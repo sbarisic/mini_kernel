@@ -2,7 +2,7 @@
 #include "GDT.h"
 
 gdtdesc gdt[GDT_SIZE] = { 0 };
-gdtr _gdtr;
+gdtr* _gdtrptr;
 
 void init_gdt_desc(uint32_t Base, uint32_t Limit, uint8_t Access, uint8_t Other, gdtdesc* d) {
 	d->lim0_15 = Limit & 0xFFFF;
@@ -27,11 +27,15 @@ void setup_gdt() {
 	init_gdt_desc(0x0, 0xFFFFF, 0xF3, 0x0D, &gdt[5]);
 	init_gdt_desc(0x0, 0x0, 0xF7, 0x0D, &gdt[6]);
 
-	_gdtr.Limit = GDT_SIZE * 8;
-	_gdtr.Base = GDT_BASE;
+	_gdtrptr = GDT_BASE + sizeof(gdt);
 
-	_memcpy((uint8_t*)_gdtr.Base, (uint8_t*)gdt, _gdtr.Limit);
-	_lgdt(&_gdtr);
+	//_gdtr.Limit = GDT_SIZE * 8;
+	//_gdtr.Base = GDT_BASE;
+	_gdtrptr->Limit = GDT_SIZE * 8;
+	_gdtrptr->Base = GDT_BASE;
+
+	_memcpy((uint8_t*)_gdtrptr->Base, (uint8_t*)gdt, _gdtrptr->Limit);
+	_lgdt(_gdtrptr);
 
 	reload_segments();
 }

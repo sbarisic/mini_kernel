@@ -34,6 +34,7 @@ void cmd_test(int argc, const char** argv, const char* argi) {
 }
 
 void cmd_crash(int argc, const char** argv, const char* argi) {
+	memset(0x800, 0, MEGABYTE);
 	__asm mov esp, 1;
 	__asm push eax;
 }
@@ -42,19 +43,28 @@ void cmd_clear(int argc, const char** argv, const char* argi) {
 	clear_screen();
 }
 
-void cmd_com1(int argc, const char** argv, const char* argi) {
-	if (argc == 2) {
+void cmd_com(int argc, const char** argv, const char* argi) {
+	if (argc >= 2) {
 		if (!strcmp(argv[1], "hello")) {
 			com1_write_string("Hello COM1 World!\n");
+		} else if (!strcmp(argv[1], "init")) {
+			int num = _atoi(argv[2]);
+
+			char buffer[64];
+			stbsp_sprintf(buffer, "Initializing serial on port 0x%X (%d)\n", num, num);
+			write(buffer);
+
+			init_com(num);
 		} else {
 			write(argv[1]);
-			write(": com1 subcommand not found\n");
+			write(": com subcommand not found\n");
 		}
 
 		return;
 	}
 
-	write("com1 hello\n");
+	write("com hello\n");
+	write("com init [num]\n");
 }
 
 void cmd_echo(int argc, const char** argv, const char* argi) {
@@ -106,7 +116,7 @@ void register_default_console_commands() {
 	register_console_command("cmd_test", &cmd_test);
 	register_console_command("crash", &cmd_crash);
 	register_console_command("clear", &cmd_clear);
-	register_console_command("com1", &cmd_com1);
+	register_console_command("com", &cmd_com);
 	register_console_command("echo", &cmd_echo);
 	register_console_command("help", &cmd_help);
 	register_console_command("clr", &cmd_clr);

@@ -2,11 +2,8 @@
 
 #pragma function(memset)
 void* memset(void *dest, int c, size_t count) {
-	char *bytes = (char *)dest;
-
-	while (count--) {
-		*bytes++ = (char)c;
-	}
+	for (uint32_t i = 0; i < count; i++)
+		((uint8_t*)dest)[i] = (uint8_t)c;
 
 	return dest;
 }

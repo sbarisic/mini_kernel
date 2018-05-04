@@ -12,6 +12,19 @@ typedef struct {
 } MULTIBOOT_MOD;
 
 typedef struct {
+	int32_t Size;
+	uint64_t BaseAddr;
+	uint64_t Len;
+	uint32_t Type;
+} MMAP_INFO;
+
+/*
+typedef struct {
+	uint32_t Len;
+	uint32_t Addr;
+} MULTIBOOT_INFO_MMAP;*/
+
+typedef struct {
 	uint32_t Flags;
 
 	uint32_t MemLower;
